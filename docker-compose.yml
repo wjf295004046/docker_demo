@@ -1,0 +1,35 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:5.6.48
+    container_name: mysql_server
+    environment:
+      MYSQL_USER: demo
+      MYSQL_PASSWORD: demo123!@#
+      MYSQL_ROOT_PASSWORD: root@123.
+      MYSQL_DATABASE: laravel_demo
+    volumes:
+      - ./init-mysql:/docker-entrypoint-initdb.d
+    restart: always
+    ports:
+      - 3306:3306
+    networks:
+      extnetwork:
+        ipv4_address: 172.19.0.3
+  php:
+    build:
+      context: ./init_php
+      dockerfile: DockfilePHP
+    container_name: php_server
+    restart: always
+    ports:
+      - 8800:8800
+    networks:
+      extnetwork:
+        ipv4_address: 172.19.0.2
+networks:
+  extnetwork:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.19.0.0/16

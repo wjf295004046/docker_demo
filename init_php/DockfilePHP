@@ -1,0 +1,5 @@
+FROM wjf295004046/myphp:v1
+COPY ./laravel_demo /usr/src/laravel_demo
+VOLUME ./laravel_demo /usr/src/laravel_demo
+WORKDIR /usr/src/laravel_demo
+CMD [ "php", "artisan", "serve", "--host=0.0.0.0", "--port=8800" ]
