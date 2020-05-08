@@ -17,7 +17,7 @@ services:
       extnetwork:
         ipv4_address: 172.19.0.3
   swoole:
-    image: wjf295004046:myswoole:v1
+    image: wjf295004046/myswoole:v1
     container_name: swoole_server
     restart: always
     volumes:
