@@ -16,6 +16,20 @@ services:
     networks:
       extnetwork:
         ipv4_address: 172.19.0.3
+  swoole:
+    image: wjf295004046:myswoole:v1
+    container_name: swoole_server
+    restart: always
+    volumes:
+    - ./init_swoole/swoole_demo:/usr/src/swoole_demo
+    ports:
+    - 8880:8880
+    networks:
+      extnetwork:
+        ipv4_address: 172.19.0.4
+    extra_hosts:
+      - "mysql_server: 172.19.0.3"
+    command: php /usr/src/swoole_demo/server.php
   php:
     build:
       context: ./init_php
@@ -30,6 +44,8 @@ services:
         ipv4_address: 172.19.0.2
     extra_hosts:
       - "mysql_server: 172.19.0.3"
+    volumes:
+    - ./init_php/laravel_demo:/usr/src/laravel_demo
 networks:
   extnetwork:
     driver: bridge

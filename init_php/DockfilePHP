@@ -1,11 +1,3 @@
-FROM wjf295004046/myphp:v2
-WORKDIR /usr/src/
-RUN git config --global user.name "wjf"
-RUN git config --global user.email "295004046@qq.com"
-RUN git clone https://github.com/wjf295004046/docker_demo.git
-RUN mkdir /usr/src/laravel_demo && cp /usr/src/docker_demo/init_php/laravel_demo /usr/src/laravel_demo
+FROM wjf295004046/myphp:v3
 WORKDIR /usr/src/laravel_demo
-RUN cp .env.example .env
-RUN composer install
-RUN php artissan migrate
 CMD [ "php", "artisan", "serve", "--host=0.0.0.0", "--port=8800" ]
