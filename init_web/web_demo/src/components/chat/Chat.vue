@@ -11,20 +11,44 @@
           <button class="btn btn-info" id="logout" v-if="status === 1" v-on:click="doLogout">登出</button>
           &nbsp;&nbsp;&nbsp;&nbsp;状态：
           <span v-if="status === 1" style="color: green; font-weight: bold">已登录</span>
+          <span v-else-if="status === 2" style="color: red; font-weight: bold">登录失败</span>
           <span v-else style="color: red; font-weight: bold">未登录</span>
         </form>
       </div>
     </div>
     <div class="row">
-      <div class="col-lg-12" style="" id="chat-window">
+      <div class="container-fluid" style="" id="chat-window" ref = 'chatWindow'>
+        <div class="row" v-for="(item, index) in chat_record" v-bind:key="index">
+          <div class="col-lg-12" v-if="item.type === 1">
+            {{ item.time }} - 系统 - {{ item.msg }}
+          </div>
+          <div class="col-lg-3 offset-lg-1 chat-record-item bg-white" v-if="item.type === 2">
+            <span class="chat-item-nickname item-nickname-left">{{ item.nickname }} : </span>
+            <p class="text-left" v-html="item.msg"></p>
+            <span class="float-right chat-item-date item-date-right">{{ item.time }}</span>
+          </div>
+          <div class="col-lg-3 offset-lg-8 chat-record-item" v-if="item.type === 3">
+            <span class="chat-item-nickname item-nickname-left">{{ item.nickname }} : </span>
+            <p class="text-left" v-html="item.msg"></p>
+            <span class="chat-item-date item-date-right">{{ item.time }}</span>
+          </div>
+          <div class="col-lg-12" v-if="item.type === -1">
+            {{ item.msg }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="new-message" v-if="new_record > 0">
+        您有 {{ new_record }} 条新消息
       </div>
     </div>
     <div class="row" id="chat-input">
       <div class="col-lg-10">
-        <textarea name="content" id="content" rows="5"></textarea>
+        <textarea name="content" id="content" rows="5" v-model="msg"></textarea>
       </div>
       <div class="col-lg-2">
-        <button class="btn btn-success"> 发送</button>
+        <button class="btn btn-success" v-on:click="sendMsg"> 发送</button>
       </div>
     </div>
   </div>
@@ -32,34 +56,126 @@
 </template>
 
 <script>
+import constant from '../../../common/constant'
+
 export default {
   name: 'Chat',
   data () {
     return {
       nickname: '',
-      status: 0
+      msg: '',
+      status: 0,
+      websocket: null,
+      chat_record: [],
+      new_record: 0
+    }
+  },
+  watch: {
+    chat_record: function () {
+      let chatWindow = this.$refs.chatWindow
+      console.log(chatWindow.scrollHeight)
+      this.new_record++
     }
   },
   methods: {
+    sendMsg: function (event) {
+      if (this.status === 1 && this.msg !== '') {
+        let data = {
+          msg: this.msg,
+          nickname: this.nickname
+        }
+        console.log(JSON.stringify(data))
+        this.websocket.send(JSON.stringify(data))
+      }
+    },
     doLogin: function (event) {
       if (this.nickname !== '') {
+        this.websocket = this.connect_websocket(this.nickname)
         this.status = 1
         this.$refs.nickname.disabled = true
       }
     },
     doLogout: function (event) {
+      this.websocket.close()
+      this.websocket = null
+    },
+    connect_websocket: function (nickname) {
+      let WsServer = constant.WEBSOCKET_HOST
+      let websocket = new WebSocket(WsServer + '?nickname=' + nickname)
+      websocket.onopen = function (evt) {
+        console.log('Connected to WebSocket server.')
+      }
+      websocket.onclose = this.websocket_onclose
+      websocket.onmessage = this.websocket_onmsg
+      websocket.onerror = function (evt, e) {
+        console.log('Error occured: ' + evt.data)
+      }
+      return websocket
+    },
+    websocket_onmsg: function (evt) {
+      let data = JSON.parse(evt.data)
+      data.msg = data.msg.replace('\n', '<br />')
+      this.chat_record.push(data)
+      console.log(data)
+    },
+    websocket_onclose: function (evt) {
       this.status = 0
       this.$refs.nickname.disabled = false
+      console.log('Disconnected')
+      let msg = {
+        type: -1,
+        msg: '您已退出群聊'
+      }
+      this.chat_record.push(msg)
+    },
+    scrollToBottom: function () {
+      // this.$refs.chatWindow.scrollTop = this.$refs.chatWindow.scrollHeight
     }
   }
 }
 </script>
 
 <style scoped>
+  .new-message {
+    position: absolute;
+    /*bottom: 0.1rem;*/
+    width: 100%;
+    float: left;
+    margin-top: -2rem;
+  }
+  .chat-item-nickname {
+    font-weight: bold;
+    font-size: 0.5rem;
+    position: absolute;
+  }
+  .item-nickname-left {
+    left: 0.5rem;
+    top: 0.2rem;
+  }
+  .chat-item-date {
+    font-size: 0.5rem;
+    position: absolute;
+  }
+  .item-date-right {
+    right: 0.5rem;
+    bottom: 0.3rem;
+  }
+  .chat-record-item {
+    background-color: lightgreen;
+    border-radius: 10px;
+    padding-top: 1rem;
+    margin-top: 2rem;
+  }
+  .chat-record-item p {
+    word-break: break-all;
+  }
+
   #chat-window {
     margin-top: 20px;
     height: 500px;
     border: 2px solid #ccc;
+    background-color: lightgrey;
+    overflow-y: auto;
   }
 
   #chat-input {
