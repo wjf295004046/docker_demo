@@ -17,8 +17,8 @@
       </div>
     </div>
     <div class="row">
-      <div class="container-fluid" style="" id="chat-window" ref = 'chatWindow'>
-        <div class="row" v-for="(item, index) in chat_record" v-bind:key="index">
+      <div class="container-fluid d-flex flex-column-reverse" style="" id="chat-window" ref = 'chatWindow'>
+        <div class="row" v-for="(item, index) in chat_record" v-bind:key="index" >
           <div class="col-lg-12" v-if="item.type === 1">
             {{ item.time }} - 系统 - {{ item.msg }}
           </div>
@@ -40,7 +40,7 @@
     </div>
     <div class="row">
       <div class="new-message" v-if="new_record > 0">
-        您有 {{ new_record }} 条新消息
+        <a href="javascript:void(0)" v-on:click="scrollToBottom">您有 {{ new_record }} 条新消息</a>
       </div>
     </div>
     <div class="row" id="chat-input">
@@ -67,17 +67,36 @@ export default {
       status: 0,
       websocket: null,
       chat_record: [],
-      new_record: 0
+      new_record: 0,
+      chat_window_client_height: 0
     }
+  },
+  created: function () {
+    this.listenScroll()
   },
   watch: {
     chat_record: function () {
-      let chatWindow = this.$refs.chatWindow
-      console.log(chatWindow.scrollHeight)
-      this.new_record++
+      if (this.$refs.chatWindow.clientHeight + this.$refs.chatWindow.scrollTop !== this.$refs.chatWindow.scrollHeight) {
+        this.new_record++
+      }
+      // this.$refs.chatWindow.scrollTop = this.$refs.chatWindow.scrollHeight
     }
   },
   methods: {
+    scrollToBottom: function (e) {
+      let chatWindow = document.getElementById('chat-window')
+      // this.$refs.chatWindow.scrollTop = this.$refs.chatWindow.scrollHeight
+      chatWindow.scrollTop = chatWindow.scrollHeight
+    },
+    listenScroll: function (e) {
+      document.addEventListener('scroll', this.handleScroll, true)
+    },
+    handleScroll: function (e) {
+      let chatWindow = document.getElementById('chat-window')
+      if (chatWindow.clientHeight + chatWindow.scrollTop === chatWindow.scrollHeight) {
+        this.new_record = 0
+      }
+    },
     sendMsg: function (event) {
       if (this.status === 1 && this.msg !== '') {
         let data = {
@@ -115,7 +134,7 @@ export default {
     websocket_onmsg: function (evt) {
       let data = JSON.parse(evt.data)
       data.msg = data.msg.replace('\n', '<br />')
-      this.chat_record.push(data)
+      this.chat_record.unshift(data)
       console.log(data)
     },
     websocket_onclose: function (evt) {
@@ -126,10 +145,7 @@ export default {
         type: -1,
         msg: '您已退出群聊'
       }
-      this.chat_record.push(msg)
-    },
-    scrollToBottom: function () {
-      // this.$refs.chatWindow.scrollTop = this.$refs.chatWindow.scrollHeight
+      this.chat_record.unshift(msg)
     }
   }
 }
