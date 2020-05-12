@@ -30,7 +30,7 @@
               <div id="chat-window" ref="chatWindow" class="d-flex flex-column-reverse">
                 <el-row :gutter="10" v-for="(item, index) in chat_record" v-bind:key="index">
                   <el-col class="chat-record-avatar" :span="2" v-if="item.type === 2">
-                    <el-avatar :size="medium" :shape="circle">
+                    <el-avatar>
                       <i class="text-black-50 el-icon-user-solid"></i>
                     </el-avatar>
                   </el-col>
@@ -51,7 +51,7 @@
                     {{ item.msg }}
                   </el-col>
                   <el-col class="chat-record-avatar" :span="2" v-if="item.type === 3">
-                    <el-avatar :size="medium" :shape="circle">
+                    <el-avatar>
                       <i class="text-black-50 el-icon-user-solid"></i>
                     </el-avatar>
                   </el-col>
