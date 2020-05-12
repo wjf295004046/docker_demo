@@ -60,13 +60,11 @@
             </el-col>
            </el-row>
            <el-row :gutter="10">
-            <el-col :span="24">
-              <div class="new-message" v-if="new_record > 0">
+            <el-col class="new-message" v-if="new_record > 0" :span="24">
                 <a href="javascript:void(0)" v-on:click="scrollToBottom">您有 {{ new_record }} 条新消息</a>
-              </div>
             </el-col>
            </el-row>
-           <el-row :gutter="10">
+           <el-row :gutter="10" id="send-window">
             <el-col :span="18">
               <el-input type="textarea" placeholder="请输入聊天内容" name="content" id="content" rows="5" v-model="msg"></el-input>
             </el-col>
@@ -220,6 +218,7 @@ export default {
     box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
     padding-top: 1rem;
     margin-top: 2rem;
+    margin-bottom: 0.5rem;
   }
   .el-input {
     width: 200px;
@@ -236,5 +235,20 @@ export default {
   .chat-record-avatar {
     padding-top: 2rem;
   }
+  .new-message {
+    /*background-color: #909399;*/
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    float: outside;
+    margin-top: -2rem;
 
+  }
+
+  #send-window {
+    margin-top: 1rem;
+  }
+  #send-window .el-button {
+    padding: 2rem;
+    margin-top: 1rem;
+  }
 </style>
