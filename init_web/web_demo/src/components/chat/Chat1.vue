@@ -6,7 +6,9 @@
        聊天室
      </el-header>
      <el-container>
-       <el-aside><div class="">当前在线人数：</div></el-aside>
+       <el-aside>
+         <el-tree :data="online_info" node-key="id" :props="defaultProps" :default-expanded-keys="[1]"></el-tree>
+       </el-aside>
        <el-container>
          <el-main>
            <el-row>
@@ -94,7 +96,15 @@ export default {
       chat_record: [],
       new_record: 0,
       chat_window_client_height: 0,
-      nickname_disable: false
+      nickname_disable: false,
+      online_info: [{
+        id: 1,
+        label: '当前在线人数： 0'
+      }],
+      defaultProps: {
+        children: 'children',
+        label: 'label'
+      }
     }
   },
   created: function () {
@@ -163,17 +173,23 @@ export default {
       data.msg = data.msg.replace('\n', '<br />')
       this.chat_record.unshift(data)
       // this.chat_record.push(data)
-      console.log(data)
+      if (data.type === 1) {
+        console.log(data)
+        this.online_info = [{
+          id: 1,
+          label: '当前在线人数: ' + data.online_num,
+          children: data.online_info
+        }]
+      }
     },
     websocket_onclose: function (evt) {
       this.status = 0
-      this.$refs.nickname.disabled = false
+      this.nickname_disable = false
       console.log('Disconnected')
-      let msg = {
-        type: -1,
-        msg: '您已退出群聊'
-      }
-      this.chat_record.unshift(msg)
+      this.online_info = [{
+        id: 1,
+        label: '当前在线人数: 0',
+      }]
     }
   }
 }
